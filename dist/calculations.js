@@ -51,11 +51,12 @@ export function parseDateTime(value) {
     .replace(/\s+/g, " ");
 
   let match = normalized.match(
-    /^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})[\s,T]+(\d{1,2}):(\d{2})(?::\d{2})?$/,
+    /^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4}|\d{2})[\s,T]+(\d{1,2}):(\d{2})(?::\d{2})?$/,
   );
   if (match) {
     const [, day, month, year, hours, minutes] = match;
-    return makeUtcDate(+year, +month, +day, +hours, +minutes);
+    const fullYear = year.length === 2 ? 2000 + Number(year) : Number(year);
+    return makeUtcDate(fullYear, +month, +day, +hours, +minutes);
   }
 
   match = normalized.match(
@@ -66,11 +67,15 @@ export function parseDateTime(value) {
     return makeUtcDate(+year, +month, +day, +hours, +minutes);
   }
 
-  throw new RangeError("Введите дату и время в формате ДД.ММ.ГГГГ ЧЧ:ММ");
+  throw new RangeError("Введите дату и время полностью");
 }
 
 export function formatDateTime(date) {
   return `${pad(date.getUTCDate())}.${pad(date.getUTCMonth() + 1)}.${date.getUTCFullYear()} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+}
+
+export function formatShortDateTime(date) {
+  return `${pad(date.getUTCDate())}.${pad(date.getUTCMonth() + 1)}.${pad(date.getUTCFullYear() % 100)} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
 }
 
 export function parseDate(value) {

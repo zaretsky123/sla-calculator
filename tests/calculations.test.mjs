@@ -9,6 +9,7 @@ import {
   excelMod,
   formatDate,
   formatDateTime,
+  formatShortDateTime,
   isMoscowWorkingTime,
   parseDate,
   parseDateTime,
@@ -50,6 +51,30 @@ test("все контрольные SLA-кейсы совпадают с Excel",
 test("секунды и лишние пробелы не влияют на SLA", () => {
   const parsed = parseDateTime("  14.09.2026   11:13:47  ");
   assert.equal(formatDateTime(parsed), "14.09.2026 11:13");
+});
+
+test("двухзначный год разворачивается внутри и сокращается при отображении", () => {
+  const short = parseDateTime("18.09.26 23:59");
+  assert.equal(short.getUTCFullYear(), 2026);
+  assert.equal(formatDateTime(short), "18.09.2026 23:59");
+  assert.equal(formatShortDateTime(short), "18.09.26 23:59");
+
+  const longWithSeconds = parseDateTime("18.09.2026 23:59:45");
+  assert.equal(formatShortDateTime(longWithSeconds), "18.09.26 23:59");
+  assert.equal(
+    formatShortDateTime(calculateSlaDeadline(short, "znoLow").deadline),
+    "24.09.26 13:59",
+  );
+  assert.equal(
+    formatShortDateTime(calculateSlaDeadline(longWithSeconds, "znoLow").deadline),
+    "24.09.26 13:59",
+  );
+});
+
+test("любой двухзначный год относится к 2000–2099", () => {
+  assert.equal(parseDateTime("01.01.00 09:00").getUTCFullYear(), 2000);
+  assert.equal(parseDateTime("01.01.31 09:00").getUTCFullYear(), 2031);
+  assert.equal(parseDateTime("31.12.99 17:59").getUTCFullYear(), 2099);
 });
 
 test("Excel ОСТАТ всегда неотрицателен при положительном делителе", () => {

@@ -6,7 +6,7 @@ import {
   calculateSlaDeadline,
   calculateStartFromInterval,
   formatDate,
-  formatDateTime,
+  formatShortDateTime,
   getDateMeta,
   isMoscowWorkingTime,
   parseDate,
@@ -90,12 +90,25 @@ function sameDate(left, right) {
 }
 
 function maskDateTime(value) {
-  const digits = String(value).replace(/\D/g, "").slice(0, 12);
-  const date = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)]
+  const source = String(value ?? "");
+  const separatorIndex = source.search(/[\s,T]/);
+  const explicitTime = separatorIndex >= 0;
+  const dateSource = explicitTime ? source.slice(0, separatorIndex) : source;
+  const timeSource = explicitTime ? source.slice(separatorIndex + 1) : "";
+  const dateDigits = dateSource.replace(/\D/g, "").slice(0, 8);
+  const date = [dateDigits.slice(0, 2), dateDigits.slice(2, 4), dateDigits.slice(4, 8)]
     .filter(Boolean)
     .join(".");
+  if (explicitTime) {
+    const timeDigits = timeSource.replace(/\D/g, "").slice(0, 4);
+    const time = [timeDigits.slice(0, 2), timeDigits.slice(2, 4)].filter(Boolean).join(":");
+    return `${date} ${time}`;
+  }
+
+  const digits = source.replace(/\D/g, "").slice(0, 12);
+  if (digits.length <= 8) return date;
   const time = [digits.slice(8, 10), digits.slice(10, 12)].filter(Boolean).join(":");
-  return `${date}${time ? ` ${time}` : ""}`;
+  return `${date} ${time}`;
 }
 
 function maskDate(value) {
@@ -149,12 +162,12 @@ function calculateSla({ silent = false } = {}) {
   updateSlaDetails();
   try {
     const receivedAt = parseDateTime(input.value);
-    input.value = formatDateTime(receivedAt);
+    input.value = formatShortDateTime(receivedAt);
     input.removeAttribute("aria-invalid");
     error.textContent = "";
     const slaType = byId("sla-type").value;
     const result = calculateSlaDeadline(receivedAt, slaType);
-    const deadline = formatDateTime(result.deadline);
+    const deadline = formatShortDateTime(result.deadline);
     byId("deadline-value").textContent = deadline;
     byId("deadline-status").textContent = "рассчитано";
     return { deadline, ...result };
@@ -171,10 +184,6 @@ function calculateSla({ silent = false } = {}) {
 
 function tryAutoCalculateSla() {
   const input = byId("received-at");
-  if (input.value.length !== 16) {
-    resetSlaResult();
-    return null;
-  }
   try {
     parseDateTime(input.value);
     return calculateSla({ silent: true });
@@ -197,7 +206,7 @@ function setupSlaForm() {
     try {
       const parsed = parseDateTime(pasted);
       event.preventDefault();
-      input.value = formatDateTime(parsed);
+      input.value = formatShortDateTime(parsed);
       input.removeAttribute("aria-invalid");
       byId("received-error").textContent = "";
       calculateSla({ silent: true });
@@ -208,7 +217,7 @@ function setupSlaForm() {
   input.addEventListener("blur", () => {
     if (!input.value) return;
     try {
-      input.value = formatDateTime(parseDateTime(input.value));
+      input.value = formatShortDateTime(parseDateTime(input.value));
       calculateSla({ silent: true });
     } catch {
       input.setAttribute("aria-invalid", "true");
@@ -492,7 +501,7 @@ function registerWebMcpTools() {
     inputSchema: {
       type: "object",
       properties: {
-        receivedAt: { type: "string", description: "ДД.ММ.ГГГГ ЧЧ:ММ" },
+        receivedAt: { type: "string", description: "ДД.ММ.ГГ ЧЧ:ММ или ДД.ММ.ГГГГ ЧЧ:ММ" },
         slaType: { type: "string", enum: Object.keys(SLA_TYPES) },
       },
       required: ["receivedAt", "slaType"],
@@ -503,7 +512,7 @@ function registerWebMcpTools() {
       const received = parseDateTime(input.receivedAt);
       if (!SLA_TYPES[input.slaType]) throw new RangeError("Неизвестный тип обращения");
       setMode("sla");
-      byId("received-at").value = formatDateTime(received);
+      byId("received-at").value = formatShortDateTime(received);
       byId("sla-type").value = input.slaType;
       const result = calculateSla();
       return { deadline: result.deadline, slaType: input.slaType };
