@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10243e" />
+    <meta
+      name="description"
+      content="SLA-калькулятор и калькулятор рабочих дней для 3-й линии техподдержки"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2310243e'/%3E%3Cpath d='M17 20h30v27H17z' fill='%23fff'/%3E%3Cpath d='M17 27h30M24 15v10M40 15v10' stroke='%235bd6b2' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='m25 37 5 5 10-11' fill='none' stroke='%2310243e' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <title>Калькулятор сроков 3-й линии</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Рабочий инструмент</p>
+          <h1>Калькулятор сроков</h1>
+        </div>
+        <div class="schedule-chip" aria-label="Рабочий график">
+          <span class="schedule-dot" aria-hidden="true"></span>
+          Пн–Пт · 09:00–18:00
+        </div>
+      </header>
+
+      <div class="mode-switch" role="tablist" aria-label="Режим калькулятора">
+        <button
+          class="mode-tab is-active"
+          id="tab-sla"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-sla"
+          data-mode="sla"
+        >
+          SLA-калькулятор
+        </button>
+        <button
+          class="mode-tab"
+          id="tab-days"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-days"
+          data-mode="days"
+        >
+          Калькулятор рабочих дней
+        </button>
+      </div>
+
+      <section
+        class="mode-panel"
+        id="panel-sla"
+        role="tabpanel"
+        aria-labelledby="tab-sla"
+      >
+        <div class="sla-grid">
+          <form class="surface sla-form" id="sla-form" novalidate>
+            <div class="surface-heading">
+              <div>
+                <p class="section-kicker">Расчёт по Excel</p>
+                <h2>Крайний срок обращения</h2>
+              </div>
+              <span class="formula-badge">без праздников</span>
+            </div>
+
+            <div class="field-group">
+              <label for="received-at">Дата и время поступления</label>
+              <input
+                id="received-at"
+                name="receivedAt"
+                class="control control-mono control-large"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="ДД.ММ.ГГГГ ЧЧ:ММ"
+                maxlength="16"
+                aria-describedby="received-hint received-error"
+              />
+              <p class="field-hint" id="received-hint">
+                Можно вставить значение с секундами — они будут отброшены.
+              </p>
+              <p class="field-error" id="received-error" role="alert"></p>
+            </div>
+
+            <div class="field-group">
+              <label for="sla-type">Тип обращения</label>
+              <div class="select-wrap">
+                <select id="sla-type" class="control" name="slaType">
+                  <option value="znoLow">ЗНО низкий</option>
+                  <option value="incidentLow">Инцидент низкий</option>
+                  <option value="incidentHigh">Инцидент высокий</option>
+                  <option value="incidentCritical">Инцидент критический</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="primary-button" type="submit">
+              Рассчитать срок
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 5 7 7-7 7" />
+              </svg>
+            </button>
+          </form>
+
+          <aside class="deadline-card" aria-live="polite" aria-atomic="true">
+            <div class="deadline-topline">
+              <span>Крайний срок</span>
+              <span class="deadline-status" id="deadline-status">ожидает расчёта</span>
+            </div>
+            <output class="deadline-value" id="deadline-value">—</output>
+            <p class="deadline-caption" id="deadline-caption">
+              Вставьте дату и выберите тип обращения
+            </p>
+
+            <div class="deadline-breakdown" id="sla-breakdown">
+              <div>
+                <span>Базовый SLA</span>
+                <strong id="base-hours">8 ч</strong>
+              </div>
+              <div>
+                <span>Доп. SLA-дни</span>
+                <strong id="additional-days">2</strong>
+              </div>
+              <div>
+                <span>Рабочий день</span>
+                <strong>9 ч</strong>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <p class="logic-note">
+          Время участвует в формуле напрямую — оно не переносится автоматически на начало
+          следующего рабочего дня.
+        </p>
+      </section>
+
+      <section
+        class="mode-panel"
+        id="panel-days"
+        role="tabpanel"
+        aria-labelledby="tab-days"
+        hidden
+      >
+        <div class="days-toolbar surface">
+          <div>
+            <p class="section-kicker">Пн–Пт, без праздников</p>
+            <h2>Период между датами</h2>
+          </div>
+          <label class="check-control" for="include-end">
+            <input id="include-end" type="checkbox" />
+            <span class="check-box" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><path d="m3 8 3 3 7-7" /></svg>
+            </span>
+            Включая конечную дату
+          </label>
+        </div>
+
+        <p class="anchor-explainer" id="anchor-explainer">
+          Сейчас опорная дата — начальная. Изменение интервала пересчитает конечную дату.
+        </p>
+
+        <div class="date-calculator" id="date-calculator">
+          <article class="date-card is-anchor" data-side="start">
+            <div class="date-card-header">
+              <label for="start-date">Начальная дата</label>
+              <span class="anchor-badge">опорная</span>
+            </div>
+            <input
+              class="control control-mono date-text-input"
+              id="start-date"
+              type="text"
+              inputmode="numeric"
+              maxlength="10"
+              autocomplete="off"
+              aria-label="Начальная дата"
+            />
+            <p class="date-error" id="start-date-error" role="alert"></p>
+            <div class="calendar" data-calendar="start" aria-label="Календарь начальной даты"></div>
+            <div class="date-meta">
+              <strong class="date-phrase" id="start-phrase"></strong>
+              <div><span>День в году</span><b id="start-year-day"></b></div>
+              <div><span>Календарная неделя</span><b id="start-week"></b></div>
+            </div>
+          </article>
+
+          <section class="interval-card" aria-labelledby="interval-title">
+            <div class="interval-heading">
+              <p class="section-kicker">Промежуток</p>
+              <h3 id="interval-title">Измените любой вариант</h3>
+            </div>
+
+            <div class="interval-row" data-interval="days">
+              <div class="interval-input-group one-column">
+                <input id="total-days" type="text" inputmode="numeric" aria-label="Всего дней" />
+              </div>
+              <span>дней</span>
+            </div>
+
+            <div class="interval-row is-accent" data-interval="workingDays">
+              <div class="interval-input-group one-column">
+                <input
+                  id="total-working-days"
+                  type="text"
+                  inputmode="numeric"
+                  aria-label="Всего рабочих дней"
+                />
+              </div>
+              <span>рабочих дней</span>
+            </div>
+
+            <div class="interval-row" data-interval="weeks">
+              <div class="interval-input-group two-columns">
+                <input id="total-weeks" type="text" inputmode="numeric" aria-label="Недель" />
+                <input id="total-week-days" type="text" inputmode="numeric" aria-label="Дней после недель" />
+              </div>
+              <span><i>недель</i><i>дней</i></span>
+            </div>
+
+            <div class="interval-row" data-interval="months">
+              <div class="interval-input-group two-columns">
+                <input id="total-months" type="text" inputmode="numeric" aria-label="Месяцев" />
+                <input id="total-month-days" type="text" inputmode="numeric" aria-label="Дней после месяцев" />
+              </div>
+              <span><i>месяцев</i><i>дней</i></span>
+            </div>
+
+            <div class="interval-row" data-interval="years">
+              <div class="interval-input-group three-columns">
+                <input id="total-years" type="text" inputmode="numeric" aria-label="Лет" />
+                <input id="total-year-months" type="text" inputmode="numeric" aria-label="Месяцев после лет" />
+                <input id="total-year-days" type="text" inputmode="numeric" aria-label="Дней после лет и месяцев" />
+              </div>
+              <span><i>лет</i><i>месяцев</i><i>дней</i></span>
+            </div>
+
+            <p class="interval-error" id="interval-error" role="alert"></p>
+          </section>
+
+          <article class="date-card" data-side="end">
+            <div class="date-card-header">
+              <label for="end-date">Конечная дата</label>
+              <span class="anchor-badge">опорная</span>
+            </div>
+            <input
+              class="control control-mono date-text-input"
+              id="end-date"
+              type="text"
+              inputmode="numeric"
+              maxlength="10"
+              autocomplete="off"
+              aria-label="Конечная дата"
+            />
+            <p class="date-error" id="end-date-error" role="alert"></p>
+            <div class="calendar" data-calendar="end" aria-label="Календарь конечной даты"></div>
+            <div class="date-meta">
+              <strong class="date-phrase" id="end-phrase"></strong>
+              <div><span>День в году</span><b id="end-year-day"></b></div>
+              <div><span>Календарная неделя</span><b id="end-week"></b></div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">Расчёты выполняются локально в браузере</footer>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
