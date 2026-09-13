@@ -209,10 +209,6 @@ function setAnchor(side) {
   document.querySelectorAll(".date-card").forEach((card) => {
     card.classList.toggle("is-anchor", card.dataset.side === side);
   });
-  byId("anchor-explainer").textContent =
-    side === "start"
-      ? "Сейчас опорная дата — начальная. Изменение интервала пересчитает конечную дату."
-      : "Сейчас опорная дата — конечная. Изменение интервала пересчитает начальную дату.";
 }
 
 function datePhrase(date) {
@@ -450,7 +446,7 @@ function registerWebMcpTools() {
   register({
     name: "calculate_sla_deadline",
     title: "Рассчитать крайний срок SLA",
-    description: "Рассчитывает и показывает крайний срок по Excel-совместимой SLA-формуле.",
+    description: "Рассчитывает и показывает крайний срок SLA.",
     inputSchema: {
       type: "object",
       properties: {
