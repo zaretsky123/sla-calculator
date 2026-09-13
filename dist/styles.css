@@ -79,8 +79,7 @@ select:focus-visible {
   margin-bottom: 24px;
 }
 
-.eyebrow,
-.section-kicker {
+.eyebrow {
   margin: 0 0 5px;
   color: var(--blue);
   font-size: 0.75rem;
@@ -115,9 +114,7 @@ h3 {
   font-size: 1.05rem;
 }
 
-.schedule-chip,
-.formula-badge,
-.anchor-badge {
+.schedule-chip {
   display: inline-flex;
   align-items: center;
   width: fit-content;
@@ -216,16 +213,6 @@ h3 {
   margin-bottom: 28px;
 }
 
-.formula-badge {
-  flex: 0 0 auto;
-  min-height: 28px;
-  padding: 0 10px;
-  color: #23644f;
-  background: var(--mint-soft);
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
-}
-
 .field-group {
   margin-bottom: 20px;
 }
@@ -278,7 +265,6 @@ h3 {
   letter-spacing: 0.02em;
 }
 
-.field-hint,
 .field-error,
 .date-error,
 .interval-error {
@@ -286,10 +272,6 @@ h3 {
   margin: 7px 2px 0;
   font-size: 0.78rem;
   line-height: 1.35;
-}
-
-.field-hint {
-  color: #6f8094;
 }
 
 .field-error,
@@ -458,17 +440,6 @@ select.control {
   font-variant-numeric: tabular-nums;
 }
 
-.logic-note,
-.anchor-explainer {
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.logic-note {
-  margin: 14px 8px 0;
-}
-
 .days-toolbar {
   padding: 22px 26px;
 }
@@ -527,15 +498,8 @@ select.control {
   outline-offset: 2px;
 }
 
-.anchor-explainer {
-  width: fit-content;
-  margin: 12px auto 16px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.62);
-}
-
 .date-calculator {
+  margin-top: 14px;
   display: grid;
   grid-template-columns: minmax(270px, 1fr) minmax(300px, 0.92fr) minmax(270px, 1fr);
   gap: 14px;
@@ -570,19 +534,6 @@ select.control {
 
 .date-card-header label {
   margin: 0;
-}
-
-.anchor-badge {
-  display: none;
-  padding: 4px 8px;
-  color: #1f5fc7;
-  background: var(--blue-soft);
-  font-size: 0.66rem;
-  text-transform: uppercase;
-}
-
-.date-card.is-anchor .anchor-badge {
-  display: inline-flex;
 }
 
 .date-text-input {
@@ -809,13 +760,6 @@ select.control {
   text-align: center;
 }
 
-.app-footer {
-  padding: 0 16px 24px;
-  color: #718298;
-  text-align: center;
-  font-size: 0.75rem;
-}
-
 @media (max-width: 980px) {
   .date-calculator {
     grid-template-columns: 1fr 1fr;
@@ -922,10 +866,6 @@ select.control {
 
   .days-toolbar {
     padding: 20px;
-  }
-
-  .anchor-explainer {
-    border-radius: 12px;
   }
 
   .interval-row {
