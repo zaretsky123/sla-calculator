@@ -63,11 +63,7 @@
         <div class="sla-grid">
           <form class="surface sla-form" id="sla-form" novalidate>
             <div class="surface-heading">
-              <div>
-                <p class="section-kicker">Расчёт по Excel</p>
-                <h2>Крайний срок обращения</h2>
-              </div>
-              <span class="formula-badge">без праздников</span>
+              <h2>Крайний срок обращения</h2>
             </div>
 
             <div class="field-group">
@@ -81,11 +77,8 @@
                 autocomplete="off"
                 placeholder="ДД.ММ.ГГГГ ЧЧ:ММ"
                 maxlength="16"
-                aria-describedby="received-hint received-error"
+                aria-describedby="received-error"
               />
-              <p class="field-hint" id="received-hint">
-                Можно вставить значение с секундами — они будут отброшены.
-              </p>
               <p class="field-error" id="received-error" role="alert"></p>
             </div>
 
@@ -115,9 +108,7 @@
               <span class="deadline-status" id="deadline-status">ожидает расчёта</span>
             </div>
             <output class="deadline-value" id="deadline-value">—</output>
-            <p class="deadline-caption" id="deadline-caption">
-              Вставьте дату и выберите тип обращения
-            </p>
+            <p class="deadline-caption" id="deadline-caption"></p>
 
             <div class="deadline-breakdown" id="sla-breakdown">
               <div>
@@ -136,10 +127,6 @@
           </aside>
         </div>
 
-        <p class="logic-note">
-          Время участвует в формуле напрямую — оно не переносится автоматически на начало
-          следующего рабочего дня.
-        </p>
       </section>
 
       <section
@@ -150,10 +137,7 @@
         hidden
       >
         <div class="days-toolbar surface">
-          <div>
-            <p class="section-kicker">Пн–Пт, без праздников</p>
-            <h2>Период между датами</h2>
-          </div>
+          <h2>Период между датами</h2>
           <label class="check-control" for="include-end">
             <input id="include-end" type="checkbox" />
             <span class="check-box" aria-hidden="true">
@@ -163,15 +147,10 @@
           </label>
         </div>
 
-        <p class="anchor-explainer" id="anchor-explainer">
-          Сейчас опорная дата — начальная. Изменение интервала пересчитает конечную дату.
-        </p>
-
         <div class="date-calculator" id="date-calculator">
           <article class="date-card is-anchor" data-side="start">
             <div class="date-card-header">
               <label for="start-date">Начальная дата</label>
-              <span class="anchor-badge">опорная</span>
             </div>
             <input
               class="control control-mono date-text-input"
@@ -193,8 +172,7 @@
 
           <section class="interval-card" aria-labelledby="interval-title">
             <div class="interval-heading">
-              <p class="section-kicker">Промежуток</p>
-              <h3 id="interval-title">Измените любой вариант</h3>
+              <h3 id="interval-title">Промежуток</h3>
             </div>
 
             <div class="interval-row" data-interval="days">
@@ -247,7 +225,6 @@
           <article class="date-card" data-side="end">
             <div class="date-card-header">
               <label for="end-date">Конечная дата</label>
-              <span class="anchor-badge">опорная</span>
             </div>
             <input
               class="control control-mono date-text-input"
@@ -270,7 +247,6 @@
       </section>
     </main>
 
-    <footer class="app-footer">Расчёты выполняются локально в браузере</footer>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
