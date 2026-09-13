@@ -8,6 +8,7 @@ import {
   formatDate,
   formatDateTime,
   getDateMeta,
+  isMoscowWorkingTime,
   parseDate,
   parseDateTime,
   toDateOnly,
@@ -137,6 +138,11 @@ function updateSlaDetails() {
   byId("additional-days").textContent = String(sla.additionalDays);
 }
 
+function resetSlaResult() {
+  byId("deadline-value").textContent = "—";
+  byId("deadline-status").textContent = "ожидает данных";
+}
+
 function calculateSla({ silent = false } = {}) {
   const input = byId("received-at");
   const error = byId("received-error");
@@ -151,16 +157,29 @@ function calculateSla({ silent = false } = {}) {
     const deadline = formatDateTime(result.deadline);
     byId("deadline-value").textContent = deadline;
     byId("deadline-status").textContent = "рассчитано";
-    byId("deadline-caption").textContent = SLA_TYPES[slaType].label;
     return { deadline, ...result };
   } catch (problem) {
-    byId("deadline-value").textContent = "—";
+    resetSlaResult();
     byId("deadline-status").textContent = "нужны данные";
-    byId("deadline-caption").textContent = "Проверьте дату и время поступления";
-    if (!silent || input.value) {
+    if (!silent) {
       input.setAttribute("aria-invalid", "true");
       error.textContent = problem.message;
     }
+    return null;
+  }
+}
+
+function tryAutoCalculateSla() {
+  const input = byId("received-at");
+  if (input.value.length !== 16) {
+    resetSlaResult();
+    return null;
+  }
+  try {
+    parseDateTime(input.value);
+    return calculateSla({ silent: true });
+  } catch {
+    resetSlaResult();
     return null;
   }
 }
@@ -171,6 +190,7 @@ function setupSlaForm() {
     input.value = maskDateTime(input.value);
     input.removeAttribute("aria-invalid");
     byId("received-error").textContent = "";
+    tryAutoCalculateSla();
   });
   input.addEventListener("paste", (event) => {
     const pasted = event.clipboardData?.getData("text") ?? "";
@@ -180,6 +200,7 @@ function setupSlaForm() {
       input.value = formatDateTime(parsed);
       input.removeAttribute("aria-invalid");
       byId("received-error").textContent = "";
+      calculateSla({ silent: true });
     } catch {
       // Обычная вставка продолжится, после чего сработает маска поля.
     }
@@ -188,6 +209,7 @@ function setupSlaForm() {
     if (!input.value) return;
     try {
       input.value = formatDateTime(parseDateTime(input.value));
+      calculateSla({ silent: true });
     } catch {
       input.setAttribute("aria-invalid", "true");
       byId("received-error").textContent = "Введите дату и время полностью";
@@ -195,13 +217,33 @@ function setupSlaForm() {
   });
   byId("sla-type").addEventListener("change", () => {
     updateSlaDetails();
-    if (input.value.length === 16) calculateSla({ silent: true });
+    tryAutoCalculateSla();
   });
   byId("sla-form").addEventListener("submit", (event) => {
     event.preventDefault();
     calculateSla();
   });
   updateSlaDetails();
+  resetSlaResult();
+}
+
+function updateScheduleStatus() {
+  const chip = document.querySelector(".schedule-chip");
+  const working = isMoscowWorkingTime(new Date());
+  chip.classList.toggle("is-working", working);
+  chip.classList.toggle("is-closed", !working);
+  chip.setAttribute(
+    "aria-label",
+    `Рабочий график: понедельник–пятница, с 09:00 до 18:00 по московскому времени. Сейчас ${working ? "рабочее" : "нерабочее"} время`,
+  );
+}
+
+function setupScheduleStatus() {
+  updateScheduleStatus();
+  window.setInterval(updateScheduleStatus, 30_000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) updateScheduleStatus();
+  });
 }
 
 function setAnchor(side) {
@@ -498,6 +540,7 @@ function registerWebMcpTools() {
 }
 
 setupTabs();
+setupScheduleStatus();
 setupSlaForm();
 setupDateCalculator();
 setMode("sla");

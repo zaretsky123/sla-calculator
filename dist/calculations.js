@@ -129,6 +129,28 @@ export function isWorkday(date, holidays = []) {
   return day !== 0 && day !== 6 && !holidaySet(holidays).has(holidayKey(date));
 }
 
+export function isMoscowWorkingTime(instant = new Date()) {
+  const date = instant instanceof Date ? instant : new Date(instant);
+  if (Number.isNaN(date.getTime())) throw new RangeError("Некорректная дата или время");
+
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Moscow",
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(date)
+      .filter(({ type }) => type !== "literal")
+      .map(({ type, value }) => [type, value]),
+  );
+  const minutes = Number(parts.hour) * 60 + Number(parts.minute);
+  return ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(parts.weekday)
+    && minutes >= WORK_START_MINUTES
+    && minutes < WORK_END_MINUTES;
+}
+
 export function workday(startDate, days, holidays = []) {
   const wholeDays = Math.trunc(Number(days));
   const date = toDateOnly(startDate);

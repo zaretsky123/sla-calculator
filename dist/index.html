@@ -60,13 +60,13 @@
         role="tabpanel"
         aria-labelledby="tab-sla"
       >
-        <div class="sla-grid">
-          <form class="surface sla-form" id="sla-form" novalidate>
-            <div class="surface-heading">
-              <h2>Крайний срок обращения</h2>
-            </div>
+        <form class="surface sla-form" id="sla-form" novalidate>
+          <div class="surface-heading">
+            <h2>Крайний срок обращения</h2>
+          </div>
 
-            <div class="field-group">
+          <div class="sla-fields-row">
+            <div class="field-group sla-input-field">
               <label for="received-at">Дата и время поступления</label>
               <input
                 id="received-at"
@@ -82,7 +82,7 @@
               <p class="field-error" id="received-error" role="alert"></p>
             </div>
 
-            <div class="field-group">
+            <div class="field-group sla-type-field">
               <label for="sla-type">Тип обращения</label>
               <div class="select-wrap">
                 <select id="sla-type" class="control" name="slaType">
@@ -94,38 +94,30 @@
               </div>
             </div>
 
-            <button class="primary-button" type="submit">
-              Рассчитать срок
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m9 5 7 7-7 7" />
-              </svg>
-            </button>
-          </form>
-
-          <aside class="deadline-card" aria-live="polite" aria-atomic="true">
-            <div class="deadline-topline">
-              <span>Крайний срок</span>
-              <span class="deadline-status" id="deadline-status">ожидает расчёта</span>
+            <div class="field-group deadline-field" aria-live="polite" aria-atomic="true">
+              <div class="deadline-label-row">
+                <label for="deadline-value">Крайний срок</label>
+                <span class="deadline-status" id="deadline-status">ожидает расчёта</span>
+              </div>
+              <output class="deadline-value" id="deadline-value">—</output>
             </div>
-            <output class="deadline-value" id="deadline-value">—</output>
-            <p class="deadline-caption" id="deadline-caption"></p>
+          </div>
 
-            <div class="deadline-breakdown" id="sla-breakdown">
-              <div>
-                <span>Базовый SLA</span>
-                <strong id="base-hours">8 ч</strong>
-              </div>
-              <div>
-                <span>Доп. SLA-дни</span>
-                <strong id="additional-days">2</strong>
-              </div>
-              <div>
-                <span>Рабочий день</span>
-                <strong>9 ч</strong>
-              </div>
+          <div class="deadline-breakdown" id="sla-breakdown">
+            <div>
+              <span>Базовый SLA</span>
+              <strong id="base-hours">8 ч</strong>
             </div>
-          </aside>
-        </div>
+            <div>
+              <span>Доп. SLA-дни</span>
+              <strong id="additional-days">2</strong>
+            </div>
+            <div>
+              <span>Рабочий день</span>
+              <strong>9 ч</strong>
+            </div>
+          </div>
+        </form>
 
       </section>
 

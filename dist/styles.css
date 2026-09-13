@@ -137,6 +137,14 @@ h3 {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 0 4px rgba(179, 38, 30, 0.12);
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.schedule-chip.is-working .schedule-dot {
   background: #23a77e;
   box-shadow: 0 0 0 4px var(--mint-soft);
 }
@@ -188,18 +196,18 @@ h3 {
   box-shadow: var(--shadow);
 }
 
-.sla-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.06fr) minmax(340px, 0.94fr);
-  gap: 18px;
-}
-
 .sla-form {
   padding: clamp(22px, 4vw, 36px);
 }
 
+.sla-fields-row {
+  display: grid;
+  grid-template-columns: minmax(270px, 1.15fr) minmax(210px, 0.9fr) minmax(270px, 1.15fr);
+  gap: 18px;
+  align-items: start;
+}
+
 .surface-heading,
-.deadline-topline,
 .date-card-header,
 .days-toolbar {
   display: flex;
@@ -215,6 +223,11 @@ h3 {
 
 .field-group {
   margin-bottom: 20px;
+}
+
+.sla-fields-row .field-group {
+  min-width: 0;
+  margin-bottom: 0;
 }
 
 .field-group > label,
@@ -265,6 +278,10 @@ h3 {
   letter-spacing: 0.02em;
 }
 
+.sla-fields-row .control {
+  min-height: 62px;
+}
+
 .field-error,
 .date-error,
 .interval-error {
@@ -307,135 +324,76 @@ select.control {
   padding-right: 45px;
 }
 
-.primary-button {
+.deadline-label-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 10px;
-  width: 100%;
-  min-height: 54px;
-  margin-top: 4px;
-  border: 0;
-  border-radius: var(--radius-md);
-  color: #fff;
-  background: var(--blue);
-  font-weight: 800;
-  box-shadow: 0 11px 24px rgba(40, 108, 219, 0.24);
-  transition:
-    background 150ms ease,
-    transform 150ms ease,
-    box-shadow 150ms ease;
 }
 
-.primary-button:hover {
-  background: #1f5fc7;
-  box-shadow: 0 13px 28px rgba(40, 108, 219, 0.3);
-  transform: translateY(-1px);
-}
-
-.primary-button:active {
-  transform: translateY(0);
-}
-
-.primary-button svg {
-  width: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.deadline-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  padding: clamp(24px, 4vw, 36px);
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-xl);
-  color: #fff;
-  background:
-    linear-gradient(135deg, rgba(91, 214, 178, 0.16), transparent 45%),
-    var(--navy);
-  box-shadow: 0 20px 50px rgba(16, 36, 62, 0.23);
-}
-
-.deadline-card::before {
-  position: absolute;
-  top: -80px;
-  right: -80px;
-  width: 220px;
-  height: 220px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 32px rgba(255, 255, 255, 0.025),
-    0 0 0 64px rgba(255, 255, 255, 0.018);
-  content: "";
-}
-
-.deadline-topline {
-  position: relative;
-  color: #c9d5e2;
-  font-size: 0.82rem;
+.deadline-label-row label {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
   font-weight: 750;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
 }
 
 .deadline-status {
-  color: var(--mint);
+  margin-bottom: 8px;
+  color: #238369;
   font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .deadline-value {
-  position: relative;
-  display: block;
-  margin: auto 0 8px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 62px;
+  padding: 0 15px;
+  overflow: hidden;
+  border: 1px solid var(--navy);
+  border-radius: var(--radius-md);
+  color: #fff;
+  background: var(--navy);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(1.05rem, 1.8vw, 1.28rem);
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.055em;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-.deadline-caption {
-  position: relative;
-  min-height: 24px;
-  margin: 0 0 30px;
-  color: #b9c7d7;
-  font-size: 0.88rem;
-}
-
 .deadline-breakdown {
-  position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
+  margin-top: 22px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.11);
+  background: var(--line);
 }
 
 .deadline-breakdown > div {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 14px 12px;
-  background: rgba(8, 28, 49, 0.7);
+  background: #f8fafc;
 }
 
 .deadline-breakdown span {
-  color: #93a8bc;
-  font-size: 0.69rem;
+  color: #6b7d91;
+  font-size: 0.74rem;
   line-height: 1.2;
 }
 
 .deadline-breakdown strong {
+  color: var(--ink);
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
 }
@@ -792,17 +750,9 @@ select.control {
     align-items: flex-start;
   }
 
-  .sla-grid,
+  .sla-fields-row,
   .date-calculator {
     grid-template-columns: 1fr;
-  }
-
-  .deadline-card {
-    min-height: 330px;
-  }
-
-  .deadline-value {
-    margin-top: 70px;
   }
 
   .interval-card {
@@ -848,13 +798,8 @@ select.control {
     line-height: 1.2;
   }
 
-  .sla-form,
-  .deadline-card {
+  .sla-form {
     padding: 22px 18px;
-  }
-
-  .deadline-breakdown {
-    grid-template-columns: 1fr;
   }
 
   .deadline-breakdown > div {

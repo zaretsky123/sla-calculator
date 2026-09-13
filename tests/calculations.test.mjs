@@ -9,6 +9,7 @@ import {
   excelMod,
   formatDate,
   formatDateTime,
+  isMoscowWorkingTime,
   parseDate,
   parseDateTime,
 } from "../dist/calculations.js";
@@ -55,6 +56,14 @@ test("Excel ОСТАТ всегда неотрицателен при полож
   assert.equal(excelMod(-1, 9), 8);
   assert.equal(excelMod(-8, 7), 6);
   assert.equal(excelMod(18, 9), 0);
+});
+
+test("индикатор рабочего времени использует московский график", () => {
+  assert.equal(isMoscowWorkingTime("2026-09-14T05:59:00Z"), false);
+  assert.equal(isMoscowWorkingTime("2026-09-14T06:00:00Z"), true);
+  assert.equal(isMoscowWorkingTime("2026-09-14T14:59:00Z"), true);
+  assert.equal(isMoscowWorkingTime("2026-09-14T15:00:00Z"), false);
+  assert.equal(isMoscowWorkingTime("2026-09-13T09:00:00Z"), false);
 });
 
 test("прямой расчёт интервала повторяет механику калькулятора дней", () => {
