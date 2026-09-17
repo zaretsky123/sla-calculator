@@ -99,7 +99,22 @@
                 <label for="deadline-value">Крайний срок</label>
                 <span class="deadline-status" id="deadline-status">ожидает расчёта</span>
               </div>
-              <output class="deadline-value" id="deadline-value">—</output>
+              <div class="deadline-control-row">
+                <output class="deadline-value" id="deadline-value">—</output>
+                <button
+                  class="copy-deadline-button"
+                  id="copy-deadline"
+                  type="button"
+                  aria-label="Скопировать крайний срок"
+                  disabled
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="8" y="8" width="11" height="11" rx="2" />
+                    <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                  </svg>
+                  <span id="copy-deadline-label">Скопировать</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -117,6 +132,14 @@
               <strong>9 ч</strong>
             </div>
           </div>
+
+          <section class="sla-week" id="sla-week" aria-labelledby="sla-week-title" hidden>
+            <div class="sla-week-heading">
+              <strong id="sla-week-title">Неделя крайнего срока</strong>
+              <span id="sla-week-range"></span>
+            </div>
+            <div class="sla-week-grid" id="sla-week-grid" role="list"></div>
+          </section>
         </form>
 
       </section>

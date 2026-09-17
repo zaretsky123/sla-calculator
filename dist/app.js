@@ -80,6 +80,10 @@ const lastWords = {
   neuter: "последнее",
 };
 
+const shortWeekdays = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+
+let copyFeedbackTimer;
+
 function todayUtc() {
   const now = new Date();
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
@@ -151,9 +155,59 @@ function updateSlaDetails() {
   byId("additional-days").textContent = String(sla.additionalDays);
 }
 
+function formatWeekRange(start, end) {
+  if (start.getUTCMonth() === end.getUTCMonth()) {
+    return `${start.getUTCDate()}–${end.getUTCDate()} ${monthGenitive[end.getUTCMonth()]} ${end.getUTCFullYear()}`;
+  }
+  return `${start.getUTCDate()} ${monthGenitive[start.getUTCMonth()]} — ${end.getUTCDate()} ${monthGenitive[end.getUTCMonth()]} ${end.getUTCFullYear()}`;
+}
+
+function renderSlaWeek(receivedAt, deadline) {
+  const host = byId("sla-week");
+  const grid = byId("sla-week-grid");
+  const startDay = toDateOnly(receivedAt);
+  const deadlineDay = toDateOnly(deadline);
+  const monday = addDays(deadlineDay, -((deadlineDay.getUTCDay() + 6) % 7));
+  const sunday = addDays(monday, 6);
+  const rangeStart = Math.min(startDay.getTime(), deadlineDay.getTime());
+  const rangeEnd = Math.max(startDay.getTime(), deadlineDay.getTime());
+
+  byId("sla-week-title").textContent = `Крайний срок — ${weekdayInfo[deadlineDay.getUTCDay()][0]}`;
+  byId("sla-week-range").textContent = formatWeekRange(monday, sunday);
+  grid.innerHTML = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(monday, index);
+    const time = date.getTime();
+    const weekend = [0, 6].includes(date.getUTCDay());
+    const classes = [
+      "sla-week-day",
+      weekend ? "is-weekend" : "",
+      time >= rangeStart && time <= rangeEnd && !weekend ? "is-period" : "",
+      sameDate(date, startDay) ? "is-start" : "",
+      sameDate(date, deadlineDay) ? "is-deadline" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const marker = sameDate(date, deadlineDay) ? "срок" : sameDate(date, startDay) ? "старт" : "";
+    return `
+      <div class="${classes}" role="listitem" aria-label="${shortWeekdays[date.getUTCDay()]}, ${formatDate(date)}${marker ? `, ${marker}` : ""}">
+        <span>${shortWeekdays[date.getUTCDay()]}</span>
+        <strong>${date.getUTCDate()}</strong>
+        <small>${marker}</small>
+      </div>
+    `;
+  }).join("");
+  host.hidden = false;
+}
+
 function resetSlaResult() {
   byId("deadline-value").textContent = "—";
   byId("deadline-status").textContent = "ожидает данных";
+  const copyButton = byId("copy-deadline");
+  copyButton.disabled = true;
+  copyButton.classList.remove("is-copied");
+  byId("copy-deadline-label").textContent = "Скопировать";
+  byId("sla-week").hidden = true;
+  byId("sla-week-grid").innerHTML = "";
 }
 
 function calculateSla({ silent = false } = {}) {
@@ -170,7 +224,9 @@ function calculateSla({ silent = false } = {}) {
     const deadline = formatShortDateTime(result.deadline);
     byId("deadline-value").textContent = deadline;
     byId("deadline-status").textContent = "рассчитано";
-    return { deadline, ...result };
+    byId("copy-deadline").disabled = false;
+    renderSlaWeek(receivedAt, result.deadline);
+    return { ...result, deadlineText: deadline };
   } catch (problem) {
     resetSlaResult();
     byId("deadline-status").textContent = "нужны данные";
@@ -180,6 +236,45 @@ function calculateSla({ silent = false } = {}) {
     }
     return null;
   }
+}
+
+async function writeClipboardText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const fallback = document.createElement("textarea");
+  fallback.value = value;
+  fallback.setAttribute("readonly", "");
+  fallback.style.position = "fixed";
+  fallback.style.opacity = "0";
+  document.body.append(fallback);
+  fallback.select();
+  const copied = document.execCommand("copy");
+  fallback.remove();
+  if (!copied) throw new Error("Не удалось скопировать");
+}
+
+async function copyDeadline() {
+  const value = byId("deadline-value").textContent.trim();
+  const button = byId("copy-deadline");
+  const label = byId("copy-deadline-label");
+  if (!value || value === "—" || button.disabled) return;
+
+  window.clearTimeout(copyFeedbackTimer);
+  try {
+    await writeClipboardText(value);
+    button.classList.add("is-copied");
+    label.textContent = "Скопировано";
+  } catch {
+    button.classList.remove("is-copied");
+    label.textContent = "Не удалось";
+  }
+  copyFeedbackTimer = window.setTimeout(() => {
+    button.classList.remove("is-copied");
+    label.textContent = "Скопировать";
+  }, 1600);
 }
 
 function tryAutoCalculateSla() {
@@ -195,6 +290,7 @@ function tryAutoCalculateSla() {
 
 function setupSlaForm() {
   const input = byId("received-at");
+  byId("copy-deadline").addEventListener("click", copyDeadline);
   input.addEventListener("input", () => {
     input.value = maskDateTime(input.value);
     input.removeAttribute("aria-invalid");
@@ -515,7 +611,7 @@ function registerWebMcpTools() {
       byId("received-at").value = formatShortDateTime(received);
       byId("sla-type").value = input.slaType;
       const result = calculateSla();
-      return { deadline: result.deadline, slaType: input.slaType };
+      return { deadline: result.deadlineText, slaType: input.slaType };
     },
   });
 
