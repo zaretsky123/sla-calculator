@@ -155,33 +155,29 @@ function updateSlaDetails() {
   byId("additional-days").textContent = String(sla.additionalDays);
 }
 
-function formatWeekRange(start, end) {
-  if (start.getUTCMonth() === end.getUTCMonth()) {
-    return `${start.getUTCDate()}–${end.getUTCDate()} ${monthGenitive[end.getUTCMonth()]} ${end.getUTCFullYear()}`;
-  }
-  return `${start.getUTCDate()} ${monthGenitive[start.getUTCMonth()]} — ${end.getUTCDate()} ${monthGenitive[end.getUTCMonth()]} ${end.getUTCFullYear()}`;
-}
-
-function renderSlaWeek(receivedAt, deadline) {
-  const host = byId("sla-week");
-  const grid = byId("sla-week-grid");
+function renderSlaMonth(receivedAt, deadline) {
+  const host = byId("sla-month");
+  const grid = byId("sla-month-grid");
   const startDay = toDateOnly(receivedAt);
   const deadlineDay = toDateOnly(deadline);
-  const monday = addDays(deadlineDay, -((deadlineDay.getUTCDay() + 6) % 7));
-  const sunday = addDays(monday, 6);
+  const monthStart = new Date(Date.UTC(deadlineDay.getUTCFullYear(), deadlineDay.getUTCMonth(), 1));
+  const calendarStart = addDays(monthStart, -((monthStart.getUTCDay() + 6) % 7));
   const rangeStart = Math.min(startDay.getTime(), deadlineDay.getTime());
   const rangeEnd = Math.max(startDay.getTime(), deadlineDay.getTime());
 
-  byId("sla-week-title").textContent = `Крайний срок — ${weekdayInfo[deadlineDay.getUTCDay()][0]}`;
-  byId("sla-week-range").textContent = formatWeekRange(monday, sunday);
-  grid.innerHTML = Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(monday, index);
+  byId("sla-month-title").textContent = `Крайний срок — ${weekdayInfo[deadlineDay.getUTCDay()][0]}`;
+  byId("sla-month-label").textContent = `${monthNames[deadlineDay.getUTCMonth()]} ${deadlineDay.getUTCFullYear()}`;
+  grid.setAttribute("aria-label", `Календарь: ${monthNames[deadlineDay.getUTCMonth()]} ${deadlineDay.getUTCFullYear()}`);
+  grid.innerHTML = Array.from({ length: 42 }, (_, index) => {
+    const date = addDays(calendarStart, index);
     const time = date.getTime();
     const weekend = [0, 6].includes(date.getUTCDay());
+    const outside = date.getUTCMonth() !== deadlineDay.getUTCMonth();
     const classes = [
-      "sla-week-day",
+      "sla-month-day",
+      outside ? "is-outside" : "",
       weekend ? "is-weekend" : "",
-      time >= rangeStart && time <= rangeEnd && !weekend ? "is-period" : "",
+      time >= rangeStart && time <= rangeEnd && !weekend && !outside ? "is-period" : "",
       sameDate(date, startDay) ? "is-start" : "",
       sameDate(date, deadlineDay) ? "is-deadline" : "",
     ]
@@ -189,8 +185,7 @@ function renderSlaWeek(receivedAt, deadline) {
       .join(" ");
     const marker = sameDate(date, deadlineDay) ? "срок" : sameDate(date, startDay) ? "старт" : "";
     return `
-      <div class="${classes}" role="listitem" aria-label="${shortWeekdays[date.getUTCDay()]}, ${formatDate(date)}${marker ? `, ${marker}` : ""}">
-        <span>${shortWeekdays[date.getUTCDay()]}</span>
+      <div class="${classes}" role="gridcell" aria-label="${shortWeekdays[date.getUTCDay()]}, ${formatDate(date)}${marker ? `, ${marker}` : ""}">
         <strong>${date.getUTCDate()}</strong>
         <small>${marker}</small>
       </div>
@@ -206,8 +201,8 @@ function resetSlaResult() {
   copyButton.disabled = true;
   copyButton.classList.remove("is-copied");
   byId("copy-deadline-label").textContent = "Скопировать";
-  byId("sla-week").hidden = true;
-  byId("sla-week-grid").innerHTML = "";
+  byId("sla-month").hidden = true;
+  byId("sla-month-grid").innerHTML = "";
 }
 
 function calculateSla({ silent = false } = {}) {
@@ -225,7 +220,7 @@ function calculateSla({ silent = false } = {}) {
     byId("deadline-value").textContent = deadline;
     byId("deadline-status").textContent = "рассчитано";
     byId("copy-deadline").disabled = false;
-    renderSlaWeek(receivedAt, result.deadline);
+    renderSlaMonth(receivedAt, result.deadline);
     return { ...result, deadlineText: deadline };
   } catch (problem) {
     resetSlaResult();
