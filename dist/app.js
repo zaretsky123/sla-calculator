@@ -162,13 +162,18 @@ function renderSlaMonth(receivedAt, deadline) {
   const deadlineDay = toDateOnly(deadline);
   const monthStart = new Date(Date.UTC(deadlineDay.getUTCFullYear(), deadlineDay.getUTCMonth(), 1));
   const calendarStart = addDays(monthStart, -((monthStart.getUTCDay() + 6) % 7));
+  const daysInMonth = new Date(
+    Date.UTC(deadlineDay.getUTCFullYear(), deadlineDay.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  const leadingDays = (monthStart.getUTCDay() + 6) % 7;
+  const cellCount = Math.ceil((leadingDays + daysInMonth) / 7) * 7;
   const rangeStart = Math.min(startDay.getTime(), deadlineDay.getTime());
   const rangeEnd = Math.max(startDay.getTime(), deadlineDay.getTime());
 
   byId("sla-month-title").textContent = `Крайний срок — ${weekdayInfo[deadlineDay.getUTCDay()][0]}`;
   byId("sla-month-label").textContent = `${monthNames[deadlineDay.getUTCMonth()]} ${deadlineDay.getUTCFullYear()}`;
   grid.setAttribute("aria-label", `Календарь: ${monthNames[deadlineDay.getUTCMonth()]} ${deadlineDay.getUTCFullYear()}`);
-  grid.innerHTML = Array.from({ length: 42 }, (_, index) => {
+  grid.innerHTML = Array.from({ length: cellCount }, (_, index) => {
     const date = addDays(calendarStart, index);
     const time = date.getTime();
     const weekend = [0, 6].includes(date.getUTCDay());
